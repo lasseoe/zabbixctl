@@ -122,9 +122,9 @@ Workflow options:
      Do not prompt for confirmation.
 
   -M --maintenances
-    Search and operate on configuration of maintenance.
-    Maintenance could be filtered using /<pattern> argument, for example,
-    search maintenance match the word 'update-kernel':
+    Search and operate on configuration of maintenance periods.
+    Maintenance can be filtered using the /<pattern> argument, for example,
+    search maintenance and match the word 'update-kernel':
       zabbixctl -M dbnode-* /update-kernel
 
     -a --add <maintenance>
@@ -210,7 +210,7 @@ Options:
     -r --remove <user>
   -M --maintenances
     -z --read-stdin
-    --period <period>      [default: 1d]
+    --period <period>    [default: 1d]
     --start <date>
     --end <date>
   -H --hosts
