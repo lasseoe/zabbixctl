@@ -1,9 +1,12 @@
 package main
 
-import "fmt"
-import "github.com/kovetskiy/lorg"
-import "github.com/kovetskiy/spinner-go"
-import "os"
+import (
+	"fmt"
+	"os"
+
+	"github.com/kovetskiy/lorg"
+	"github.com/kovetskiy/spinner-go"
+)
 
 func getLogger() *lorg.Log {
 	logger := lorg.NewLog()
@@ -37,6 +40,7 @@ func debugln(value interface{}) {
 	debugf("%s", value)
 }
 
+//lint:ignore U1000 Ignore unused function temporarily for debugging
 func traceln(value interface{}) {
 	tracef("%s", value)
 }

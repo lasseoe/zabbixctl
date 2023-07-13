@@ -628,34 +628,26 @@ func parsePeriod(targets string) (int64, error) {
 		days, hours, minutes int64
 	)
 
-	destiny := karma.Describe(
-		"method", "parsePeriod",
-	).Describe(
-		"period", targets,
-	)
+	destiny := karma.Describe("method", "parsePeriod").Describe("period", targets)
 
 	switch {
 	case strings.HasSuffix(targets, "d"):
-		days, err = strconv.ParseInt(
-			strings.TrimSuffix(targets, "d"), 10, 64,
-		)
-		return days * 86400, nil
+		days, err = strconv.ParseInt(strings.TrimSuffix(targets, "d"), 10, 64)
+		if err == nil {
+			return days * 86400, nil
+		}
 	case strings.HasSuffix(targets, "h"):
-		hours, err = strconv.ParseInt(
-			strings.TrimSuffix(targets, "h"), 10, 64,
-		)
-		return hours * 3600, nil
+		hours, err = strconv.ParseInt(strings.TrimSuffix(targets, "h"), 10, 64)
+		if err == nil {
+			return hours * 3600, nil
+		}
 	case strings.HasSuffix(targets, "m"):
-		minutes, err = strconv.ParseInt(
-			strings.TrimSuffix(targets, "m"), 10, 64,
-		)
-		return minutes * 60, nil
+		minutes, err = strconv.ParseInt(strings.TrimSuffix(targets, "m"), 10, 64)
+		if err == nil {
+			return minutes * 60, nil
+		}
 	}
-	return 0, destiny.Describe(
-		"error", err,
-	).Describe(
-		"period", targets,
-	).Reason("can't parse")
+	return 0, destiny.Describe("error", err).Describe("period", targets).Reason("can't parse")
 }
 
 func confirmMaintenance(messages, maintenance string) bool {
