@@ -1,5 +1,7 @@
 # zabbixctl
 
+[![CI](https://github.com/lasseoe/zabbixctl/actions/workflows/go.yml/badge.svg)](https://github.com/lasseoe/zabbixctl/actions/workflows/go.yml)
+
 **zabbixctl** is tool for working with zabbix server api using command line
 interface, it provides effective way for operating on statuses of triggers,
 hosts latest data and groups of users.
