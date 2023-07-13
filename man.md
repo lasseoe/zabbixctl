@@ -3,29 +3,29 @@ zabbixctl(1) -- tool for working with zabbix using command line interface
 
 ## DESCRIPTIOPN
 
-*zabbixctl* is tool for working with zabbix server api using command line
+*zabbixctl* is a tool for working with zabbix server api using command line
 interface, it provides effective way for operating on statuses of triggers,
 hosts latest data and groups of users.
 
 ## CONFIGURATION
 
-*zabbixctl* must be configurated before using, configuration file should be
-placed in `~/.config/zabbixctl.conf` and must be written using following syntax:
+*zabbixctl* reads its configuration from  ~/.config/zabbixctl.conf and must be
+written using following syntax:
 
     [server]
-      address  = "zabbix.local"
+      address  = "https://zabbix.local"
       username = "admin"
       password = "password"
 
     [session]
       path = "~/.cache/zabbixctl.session"
 
-  *zabbixctl* will authorize in 'zabbix.local' server using given user
-credentials and save a zabbix session to a file `~/.cache/zabbixctl.session` and
-at second run will use saved session instead of new authorization, by the way
-zabbix sessions have a ttl that by default equals to 15 minutes, so if saved
-zabbix session is outdated, *zabbixctl* will repeat authorization and rewrite
-the session file.
+  *zabbixctl* will authorize against 'zabbix.local' using given user
+credentials and save a Zabbix session to ~/.cache/zabbixctl.session.
+Subsequent runs will use saved session instead of new re-authorizing.
+Zabbix sessions have a default TTL of 15 minutes, so if the saved Zabbix
+session is outdated, zabbixctl will repeat authorization and rewrite the
+session file.
 
 ## SYNOPSIS
 
@@ -39,7 +39,7 @@ the session file.
 
 **-T --triggers**
 
-Search on zabbix triggers statuses. Triggers could be filtered using /<pattern>
+Search Zabbix triggers statuses. Triggers can be filtered usingi the /<pattern>
 argument, for example, search and acknowledge all triggers in a problem state
 and match the word 'cache':
 
@@ -93,12 +93,12 @@ Acknowledge all retrieved triggers.
 
 **-f --noconfirm**
 
-Do not prompt acknowledge confirmation dialog.
+Do not prompt for acknowledge confirmation.
 
 **-L --latest-data**
 
 Search and show latest data for specified host(s). Hosts can be searched
-using wildcard character '*'.  Latest data can be filtered using /<pattern>
+using a wildcard character '*'.  Data can be filtered using the /<pattern>
 argument, for example retrieve latest data for database nodes and search
 information about replication:
 
@@ -110,23 +110,23 @@ Show links on graph pages.
 
 **-G --groups**
 
-Search and operate on configuration of users groups.
+Search and operate on configuration of usergroups.
 
 **-l --list**
 
-Show list users in specified users group.
+Show list of users in specified usergroup.
 
 **-a --add**
 
-Add specified <user> to specified users group.
+Add specified <user> to specified usergroup.
 
 **-r --remove**
 
-Remove specified <user> from speicifed users group.
+Remove specified <user> from specified usergroup.
 
 **-f --noconfirm**
 
-Do not prompt confirmation dialog.
+Do not prompt for confirmation.
 
 ## COMMON OPTIONS
 
@@ -160,7 +160,7 @@ zabbixctl -Tp
 zabbixctl -Tr
 ```
 
-*Listing and filtering triggers that contain a word mysql*
+*Listing and filtering triggers that contain the word mysql*
 
 ```
 zabbixctl -T /mysql
@@ -184,13 +184,13 @@ zabbixctl -L dbnode* /lag
 zabbixctl -L 'container-*' /cpu quota --stacked
 ```
 
-*Listing users groups that starts with 'HTTP_'*
+*Listing usergroups that starts with 'HTTP_'*
 
 ```
 zabbixctl -G HTTP_*
 ```
 
-*Listing users groups that contain user admin*
+*Listing usergroups that contain user admin*
 
 ```
 zabbixctl -G /admin
@@ -207,6 +207,8 @@ zabbixctl -G /guest -a admin
 Egor Kovetskiy <e.kovetskiy@gmail.com>
 
 ## CONTRIBUTORS
+
+Lasse Osterild <lasse@oesterild.dk>
 
 Stanislav Seletskiy <s.seletskiy@gmail.com>
 

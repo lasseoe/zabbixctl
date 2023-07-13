@@ -6,26 +6,26 @@ var (
 	version = "manual build"
 	docs    = `zabbixctl ` + version + os.ExpandEnv(`
 
-  zabbixctl is tool for working with zabbix server api using command line
-interface, it provides effective way for operating on statuses of triggers,
+  zabbixctl is a tool for working with the Zabbix server API using a command line
+interface, it provides an effective way for operating on statuses of triggers,
 hosts latest data and groups of users.
 
-  zabbixctl must be configurated before using, configuration file should be
-placed in ~/.config/zabbixctl.conf and must be written using following syntax:
+  zabbixctl reads its configuration from  ~/.config/zabbixctl.conf and must be
+written using following syntax:
 
     [server]
-      address  = "zabbix.local"
+      address  = "https://zabbix.local"
       username = "admin"
       password = "password"
 
     [session]
       path = "~/.cache/zabbixctl.session"
 
-  zabbixctl will authorize in 'zabbix.local' server using given user
-credentials and save a zabbix session to a file ~/.cache/zabbixctl.session and
-at second run will use saved session instead of new authorization, by the way
-zabbix sessions have a ttl that by default equals to 15 minutes, so if saved
-zabbix session is outdated, zabbixctl will repeat authorization and rewrite the
+  zabbixctl will authorize against 'zabbix.local' using given user
+credentials and save a Zabbix session to ~/.cache/zabbixctl.session.
+Subsequent runs will use saved session instead of new re-authorizing.
+Zabbix sessions have a default TTL of 15 minutes, so if the saved Zabbix
+session is outdated, zabbixctl will repeat authorization and rewrite the
 session file.
 
 Usage:
@@ -39,7 +39,7 @@ Usage:
 
 Workflow options:
   -T --triggers
-    Search on zabbix triggers statuses. Triggers could be filtered using
+    Search Zabbix trigger statuses. Triggers can be filtered using the
     /<pattern> argument, for example, search and acknowledge all triggers in a
     problem state and match the word 'cache':
       zabbixctl -Tp /cache
@@ -83,7 +83,7 @@ Workflow options:
       Acknowledge all retrieved triggers.
 
     -f --noconfirm
-      Do not prompt acknowledge confirmation dialog.
+      Do not prompt for acknowledge confirmation.
 
     -d --extended
       Once for printing item's last value from the first component of the
@@ -91,9 +91,9 @@ Workflow options:
       printing item description as well.
 
   -L --latest-data
-    Search and show latest data for specified host(s). Hosts can be searched
-    using wildcard character '*'.  Latest data can be filtered using /<pattern>
-    argument, for example retrieve latest data for database nodes and search
+    Search and show latest data for specified host(s). Hosts can be searched for
+    using a wildcard character '*'.  Data can be filtered using the /<pattern>
+    argument, for example to retrieve latest data for database nodes and search
     information about replication:
       zabbixctl -L dbnode-* /replication
 
@@ -107,19 +107,19 @@ Workflow options:
       Output single link for the normal (overlapping) graph of selected data.
 
   -G --groups
-    Search and operate on configuration of users groups.
+    Search and operate on configuration of usergroups.
 
     -l --list
-     Show list users in specified users group.
+     Show list of users in specified usergroup.
 
     -a --add
-     Add specified <user> to specified users group.
+     Add specified <user> to specified usergroup.
 
     -r --remove
-     Remove specified <user> from speicifed users group.
+     Remove specified <user> from speicifed usergroup.
 
     -f --noconfirm
-     Do not prompt confirmation dialog.
+     Do not prompt for confirmation.
 
   -M --maintenances
     Search and operate on configuration of maintenance.
@@ -141,7 +141,7 @@ Workflow options:
       [default: 1d]
 
     -f --noconfirm
-      Do not prompt confirmation dialog.
+      Do not prompt for confirmation.
 
     -r --remove <maintenance>
       Remove specified <maintenance>.
@@ -150,7 +150,7 @@ Workflow options:
       Read hosts from stdin.
 
   -H --hosts
-    Search and operate with hosts.
+    Search and operate on hosts.
 
     -r --remove <hostname>
       Remove specified <hostname>.

@@ -9,7 +9,7 @@ build:
 	go build -x -ldflags=${LDFLAGS} -gcflags ${GCFLAGS} .
 
 man:
-	@ronn -r man.markdown
+	@ronn -r man.md
 
 clean:
 	@git clean -ffdx

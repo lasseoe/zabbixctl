@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"reflect"
@@ -12,6 +12,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	hcversion "github.com/hashicorp/go-version"
 	"github.com/reconquest/karma-go"
 )
 
@@ -44,9 +45,7 @@ type Zabbix struct {
 	apiVersion string
 }
 
-func NewZabbix(
-	address, username, password, sessionFile string,
-) (*Zabbix, error) {
+func NewZabbix(address, username, password, sessionFile string) (*Zabbix, error) {
 	var err error
 
 	zabbix := &Zabbix{
@@ -54,11 +53,21 @@ func NewZabbix(
 	}
 
 	if !strings.Contains(address, "://") {
-		address = "http://" + address
+		address = "https://" + address
 	}
 
 	zabbix.basicURL = strings.TrimSuffix(address, "/")
 	zabbix.apiURL = zabbix.basicURL + "/api_jsonrpc.php"
+
+	// retrieve Zabbix version
+	if len(zabbix.apiVersion) < 1 {
+		err = zabbix.GetAPIVersion()
+		if err != nil {
+			return nil, karma.Format(
+				err,
+				"can't get zabbix api version")
+		}
+	}
 
 	if sessionFile != "" {
 		debugln("* reading session file")
@@ -68,8 +77,7 @@ func NewZabbix(
 			return nil, karma.Format(
 				err,
 				"can't restore zabbix session using file '%s'",
-				sessionFile,
-			)
+				sessionFile)
 		}
 	} else {
 		debugln("* session feature is not used")
@@ -80,9 +88,8 @@ func NewZabbix(
 		if err != nil {
 			return nil, karma.Format(
 				err,
-				"can't authorize user '%s' in zabbix server",
-				username,
-			)
+				"can't authorize user '%s' on server %s",
+				username, zabbix.basicURL)
 		}
 	} else {
 		debugln("* using session instead of authorization")
@@ -97,18 +104,7 @@ func NewZabbix(
 			return nil, karma.Format(
 				err,
 				"can't save zabbix session to file '%s'",
-				sessionFile,
-			)
-		}
-	}
-
-	if len(zabbix.apiVersion) < 1 {
-		err = zabbix.GetAPIVersion()
-		if err != nil {
-			return nil, karma.Format(
-				err,
-				"can't get zabbix api version",
-			)
+				sessionFile)
 		}
 	}
 
@@ -121,23 +117,20 @@ func (zabbix *Zabbix) restoreSession(path string) error {
 	)
 	if err != nil {
 		return karma.Format(
-			err, "can't open session file",
-		)
+			err, "can't open session file")
 	}
 
 	stat, err := file.Stat()
 	if err != nil {
 		return karma.Format(
-			err, "can't stat session file",
-		)
+			err, "can't stat session file")
 	}
 
 	if time.Since(stat.ModTime()).Seconds() < ZabbixSessionTTL {
-		session, err := ioutil.ReadAll(file)
+		session, err := io.ReadAll(file)
 		if err != nil {
 			return karma.Format(
-				err, "can't read session file",
-			)
+				err, "can't read session file")
 		}
 
 		zabbix.session = string(session)
@@ -149,12 +142,11 @@ func (zabbix *Zabbix) restoreSession(path string) error {
 }
 
 func (zabbix *Zabbix) saveSession(path string) error {
-	err := ioutil.WriteFile(path, []byte(zabbix.session), 0600)
+	err := os.WriteFile(path, []byte(zabbix.session), 0600)
 	if err != nil {
 		return karma.Format(
 			err,
-			"can't write session file",
-		)
+			"can't write session file")
 	}
 
 	return nil
@@ -169,8 +161,7 @@ func (zabbix *Zabbix) GetAPIVersion() error {
 		"apiinfo.version",
 		Params{},
 		&response,
-		withoutAuthFlag,
-	)
+		withoutAuthFlag)
 	if err != nil {
 		return err
 	}
@@ -183,11 +174,33 @@ func (zabbix *Zabbix) GetAPIVersion() error {
 func (zabbix *Zabbix) Login(username, password string) error {
 	var response ResponseLogin
 
+	params := Params{
+		"password": password}
+
 	debugln("* authorizing")
 
-	err := zabbix.call(
+	// temporary fix: v5.4 changed user.login argument 'user' to 'username'
+	// we'll implement a better API versioning methodology at a later stage.
+	zabbixVersion, err := hcversion.NewVersion(zabbix.apiVersion)
+	if err != nil {
+		return karma.Format(err, "error parsing apiVersion")
+	}
+	constraints, err := hcversion.NewConstraint(">= 5.4")
+	if err != nil {
+		return karma.Format(err, "error setting version contraint")
+	}
+
+	if constraints.Check(zabbixVersion) {
+		debugf("* Login: zabbix version %s >= 5.4", zabbix.apiVersion)
+		params["username"] = username
+	} else {
+		debugf("* Login: zabbix version %s < 5.4", zabbix.apiVersion)
+		params["user"] = username
+	}
+
+	err = zabbix.call(
 		"user.login",
-		Params{"user": username, "password": password},
+		params,
 		&response,
 		withAuthFlag,
 	)
@@ -206,30 +219,9 @@ func (zabbix *Zabbix) Acknowledge(identifiers []string) error {
 	debugln("* acknowledging triggers")
 
 	params := Params{
+		"action":   6,
 		"eventids": identifiers,
 		"message":  "ack",
-	}
-
-	if len(strings.Split(zabbix.apiVersion, ".")) < 1 {
-		return karma.Format("can't parse zabbix version %s", zabbix.apiVersion)
-	}
-
-	majorZabbixVersion := strings.Split(zabbix.apiVersion, ".")[0]
-
-	switch majorZabbixVersion {
-
-	case "4":
-		//https://www.zabbix.com/documentation/4.0/manual/api/reference/event/acknowledge
-		params["action"] = 6
-
-	case "3":
-		//https://www.zabbix.com/documentation/3.4/manual/api/reference/event/acknowledge
-		params["action"] = 1
-
-		//default:
-		//https://www.zabbix.com/documentation/1.8/api/event/acknowledge
-		//https://www.zabbix.com/documentation/2.0/manual/appendix/api/event/acknowledge
-
 	}
 
 	err := zabbix.call(
@@ -289,15 +281,13 @@ func (zabbix *Zabbix) GetMaintenances(params Params) ([]Maintenance, error) {
 	}
 
 	var maintenances []Maintenance
-	for _, maintenance := range response.Data {
-		maintenances = append(maintenances, maintenance)
-	}
+	maintenances = append(maintenances, response.Data...)
 
 	return maintenances, nil
 }
 
 func (zabbix *Zabbix) CreateMaintenance(params Params) (Maintenances, error) {
-	debugln("* create maintenances list")
+	debugln("* create maintenance period")
 
 	var response ResponseMaintenancesArray
 
@@ -307,7 +297,7 @@ func (zabbix *Zabbix) CreateMaintenance(params Params) (Maintenances, error) {
 }
 
 func (zabbix *Zabbix) UpdateMaintenance(params Params) (Maintenances, error) {
-	debugln("* update maintenances list")
+	debugln("* update maintenance period")
 
 	var response ResponseMaintenancesArray
 
@@ -317,7 +307,7 @@ func (zabbix *Zabbix) UpdateMaintenance(params Params) (Maintenances, error) {
 }
 
 func (zabbix *Zabbix) RemoveMaintenance(params interface{}) (Maintenances, error) {
-	debugln("* remove maintenances")
+	debugln("* remove maintenance period")
 
 	var response ResponseMaintenancesArray
 
@@ -351,7 +341,7 @@ func (zabbix *Zabbix) GetHTTPTests(params Params) ([]HTTPTest, error) {
 }
 
 func (zabbix *Zabbix) GetUsersGroups(params Params) ([]UserGroup, error) {
-	debugln("* retrieving users groups list")
+	debugln("* retrieving usergroup list")
 
 	var response ResponseUserGroup
 	err := zabbix.call("usergroup.get", params, &response, withAuthFlag)
@@ -362,10 +352,7 @@ func (zabbix *Zabbix) GetUsersGroups(params Params) ([]UserGroup, error) {
 	return response.Data, nil
 }
 
-func (zabbix *Zabbix) AddUserToGroups(
-	groups []UserGroup,
-	user User,
-) error {
+func (zabbix *Zabbix) AddUserToGroups(groups []UserGroup, user User) error {
 	for _, group := range groups {
 		identifiers := []string{user.ID}
 
@@ -392,10 +379,7 @@ func (zabbix *Zabbix) AddUserToGroups(
 	return nil
 }
 
-func (zabbix *Zabbix) RemoveUserFromGroups(
-	groups []UserGroup,
-	user User,
-) error {
+func (zabbix *Zabbix) RemoveUserFromGroups(groups []UserGroup, user User) error {
 	for _, group := range groups {
 		identifiers := []string{}
 
@@ -427,7 +411,7 @@ func (zabbix *Zabbix) RemoveUserFromGroups(
 }
 
 func (zabbix *Zabbix) GetUsers(params Params) ([]User, error) {
-	debugln("* retrieving users list")
+	debugln("* retrieving user list")
 
 	var response ResponseUsers
 	err := zabbix.call("user.get", params, &response, withAuthFlag)
@@ -439,7 +423,7 @@ func (zabbix *Zabbix) GetUsers(params Params) ([]User, error) {
 }
 
 func (zabbix *Zabbix) GetHosts(params Params) ([]Host, error) {
-	debugf("* retrieving hosts list")
+	debugf("* retrieving host list")
 
 	var response ResponseHosts
 	err := zabbix.call("host.get", params, &response, withAuthFlag)
@@ -451,7 +435,7 @@ func (zabbix *Zabbix) GetHosts(params Params) ([]Host, error) {
 }
 
 func (zabbix *Zabbix) RemoveHosts(params interface{}) (Hosts, error) {
-	debugf("* remove hosts list")
+	debugf("* remove host list")
 
 	var response ResponseHostsArray
 	err := zabbix.call("host.delete", params, &response, withAuthFlag)
@@ -460,7 +444,7 @@ func (zabbix *Zabbix) RemoveHosts(params interface{}) (Hosts, error) {
 }
 
 func (zabbix *Zabbix) GetGroups(params Params) ([]Group, error) {
-	debugf("* retrieving groups list")
+	debugf("* retrieving hostgroup list")
 
 	var response ResponseGroups
 	err := zabbix.call("hostgroup.get", params, &response, withAuthFlag)
@@ -480,11 +464,7 @@ func (zabbix *Zabbix) GetStackedGraphURL(identifiers []string) string {
 	return zabbix.getGraphURL(identifiers, "batchgraph", "1")
 }
 
-func (zabbix *Zabbix) getGraphURL(
-	identifiers []string,
-	action string,
-	graphType string,
-) string {
+func (zabbix *Zabbix) getGraphURL(identifiers []string, action string, graphType string) string {
 	encodedIdentifiers := []string{}
 
 	for _, identifier := range identifiers {
@@ -524,9 +504,7 @@ func (zabbix *Zabbix) GetHistory(extend Params) ([]History, error) {
 	return response.Data, nil
 }
 
-func (zabbix *Zabbix) call(
-	method string, params interface{}, response Response, authFlag bool,
-) error {
+func (zabbix *Zabbix) call(method string, params interface{}, response Response, authFlag bool) error {
 	debugf("~> %s", method)
 	debugParams(params)
 
@@ -573,7 +551,7 @@ func (zabbix *Zabbix) call(
 		)
 	}
 
-	body, err := ioutil.ReadAll(resource.Body)
+	body, err := io.ReadAll(resource.Body)
 	if err != nil {
 		return karma.Format(
 			err,

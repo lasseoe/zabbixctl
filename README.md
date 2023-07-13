@@ -8,7 +8,8 @@ hosts latest data and groups of users.
 
 ## State of the project
 
-I don't use zabbix daily anymore. Therefore, I don't commit into the project. But I'm still here and I'm willing to accept your contributions.
+### 2023-07-13
+It would appear that the original project is dead, so I decided to fork it and will bring it up to date, and add new features.
 
 ## Installation
 
