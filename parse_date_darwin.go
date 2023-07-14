@@ -3,8 +3,8 @@ package main
 import (
 	"time"
 
+	"github.com/ijt/go-anytime"
 	karma "github.com/reconquest/karma-go"
-	"github.com/simplereach/timeutils"
 )
 
 func parseDate(date string) (int64, error) {
@@ -12,11 +12,12 @@ func parseDate(date string) (int64, error) {
 
 	destiny := karma.Describe("method", "parseDate")
 
+	timeNow := time.Now()
+
 	if date == "" {
-		timeNow := time.Now()
 		dateUnix = timeNow.Unix()
 	} else {
-		dateParse, err := timeutils.ParseDateString(date)
+		dateParse, err := anytime.Parse(date, timeNow)
 		if err != nil {
 			return dateUnix, destiny.Describe(
 				"error", err,
@@ -31,11 +32,12 @@ func parseDate(date string) (int64, error) {
 	return dateUnix, nil
 }
 
-func parseDateTime(value string) (int64, error) {
-	date, err := timeutils.ParseDateString(value)
+func parseDateTime(date string) (int64, error) {
+	timeNow := time.Now()
+	dateParse, err := anytime.Parse(date, timeNow)
 	if err != nil {
-		return 0, karma.Format(err, "can't parse datetime '%s'", value)
+		return 0, karma.Format(err, "can't parse datetime '%s'", date)
 	}
 
-	return date.Unix(), nil
+	return dateParse.Unix(), nil
 }
