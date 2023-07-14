@@ -2,17 +2,19 @@ package main
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
 	"reflect"
+	"strconv"
 	"strings"
 	"sync/atomic"
 	"time"
 
-	hcversion "github.com/hashicorp/go-version"
+	goversion "github.com/hashicorp/go-version"
 	"github.com/reconquest/karma-go"
 )
 
@@ -39,18 +41,29 @@ type Request struct {
 type Zabbix struct {
 	basicURL   string
 	apiURL     string
+	insecure   string
 	session    string
 	client     *http.Client
 	requestID  int64
 	apiVersion string
 }
 
-func NewZabbix(address, username, password, sessionFile string) (*Zabbix, error) {
+func NewZabbix(address, username, password, insecure, sessionFile string) (*Zabbix, error) {
 	var err error
 
-	zabbix := &Zabbix{
-		client: &http.Client{},
+	tlsinsecure, err := strconv.ParseBool(strings.ToLower(insecure))
+	if err != nil {
+		karma.Format(err, "can't parse insecure config flag, expected boolean, got '%s'", insecure)
 	}
+
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: tlsinsecure},
+	}
+	zabbix := &Zabbix{
+		client: &http.Client{Transport: tr},
+	}
+
+	debugf("* tls insecure = %v", tlsinsecure)
 
 	if !strings.Contains(address, "://") {
 		address = "https://" + address
@@ -63,9 +76,7 @@ func NewZabbix(address, username, password, sessionFile string) (*Zabbix, error)
 	if len(zabbix.apiVersion) < 1 {
 		err = zabbix.GetAPIVersion()
 		if err != nil {
-			return nil, karma.Format(
-				err,
-				"can't get zabbix api version")
+			return nil, karma.Format(err, "can't get zabbix api version")
 		}
 	}
 
@@ -74,10 +85,7 @@ func NewZabbix(address, username, password, sessionFile string) (*Zabbix, error)
 
 		err = zabbix.restoreSession(sessionFile)
 		if err != nil {
-			return nil, karma.Format(
-				err,
-				"can't restore zabbix session using file '%s'",
-				sessionFile)
+			return nil, karma.Format(err, "can't restore zabbix session using file '%s'", sessionFile)
 		}
 	} else {
 		debugln("* session feature is not used")
@@ -101,10 +109,7 @@ func NewZabbix(address, username, password, sessionFile string) (*Zabbix, error)
 		// always rewrite session file, it will change modify date
 		err = zabbix.saveSession(sessionFile)
 		if err != nil {
-			return nil, karma.Format(
-				err,
-				"can't save zabbix session to file '%s'",
-				sessionFile)
+			return nil, karma.Format(err, "can't save zabbix session to file '%s'", sessionFile)
 		}
 	}
 
@@ -112,25 +117,20 @@ func NewZabbix(address, username, password, sessionFile string) (*Zabbix, error)
 }
 
 func (zabbix *Zabbix) restoreSession(path string) error {
-	file, err := os.OpenFile(
-		path, os.O_CREATE|os.O_RDWR, 0600,
-	)
+	file, err := os.OpenFile(path, os.O_CREATE|os.O_RDWR, 0600)
 	if err != nil {
-		return karma.Format(
-			err, "can't open session file")
+		return karma.Format(err, "can't open session file")
 	}
 
 	stat, err := file.Stat()
 	if err != nil {
-		return karma.Format(
-			err, "can't stat session file")
+		return karma.Format(err, "can't stat session file")
 	}
 
 	if time.Since(stat.ModTime()).Seconds() < ZabbixSessionTTL {
 		session, err := io.ReadAll(file)
 		if err != nil {
-			return karma.Format(
-				err, "can't read session file")
+			return karma.Format(err, "can't read session file")
 		}
 
 		zabbix.session = string(session)
@@ -144,9 +144,7 @@ func (zabbix *Zabbix) restoreSession(path string) error {
 func (zabbix *Zabbix) saveSession(path string) error {
 	err := os.WriteFile(path, []byte(zabbix.session), 0600)
 	if err != nil {
-		return karma.Format(
-			err,
-			"can't write session file")
+		return karma.Format(err, "can't write session file")
 	}
 
 	return nil
@@ -181,11 +179,11 @@ func (zabbix *Zabbix) Login(username, password string) error {
 
 	// temporary fix: v5.4 changed user.login argument 'user' to 'username'
 	// we'll implement a better API versioning methodology at a later stage.
-	zabbixVersion, err := hcversion.NewVersion(zabbix.apiVersion)
+	zabbixVersion, err := goversion.NewVersion(zabbix.apiVersion)
 	if err != nil {
 		return karma.Format(err, "error parsing apiVersion")
 	}
-	constraints, err := hcversion.NewConstraint(">= 5.4")
+	constraints, err := goversion.NewConstraint(">= 5.4")
 	if err != nil {
 		return karma.Format(err, "error setting version contraint")
 	}
@@ -369,10 +367,7 @@ func (zabbix *Zabbix) AddUserToGroups(groups []UserGroup, user User) error {
 			withAuthFlag,
 		)
 		if err != nil {
-			return karma.Format(
-				err,
-				"can't update usergroup %s", group.Name,
-			)
+			return karma.Format(err, "can't update usergroup %s", group.Name)
 		}
 	}
 
@@ -400,10 +395,7 @@ func (zabbix *Zabbix) RemoveUserFromGroups(groups []UserGroup, user User) error 
 			withAuthFlag,
 		)
 		if err != nil {
-			return karma.Format(
-				err,
-				"can't update usergroup %s", group.Name,
-			)
+			return karma.Format(err, "can't update usergroup %s", group.Name)
 		}
 	}
 
@@ -521,22 +513,12 @@ func (zabbix *Zabbix) call(method string, params interface{}, response Response,
 
 	buffer, err := json.Marshal(request)
 	if err != nil {
-		return karma.Format(
-			err,
-			"can't encode request to JSON",
-		)
+		return karma.Format(err, "can't encode request to JSON")
 	}
 
-	payload, err := http.NewRequest(
-		"POST",
-		zabbix.apiURL,
-		bytes.NewReader(buffer),
-	)
+	payload, err := http.NewRequest("POST", zabbix.apiURL, bytes.NewReader(buffer))
 	if err != nil {
-		return karma.Format(
-			err,
-			"can't create http request",
-		)
+		return karma.Format(err, "can't create http request")
 	}
 
 	payload.ContentLength = int64(len(buffer))
@@ -545,18 +527,12 @@ func (zabbix *Zabbix) call(method string, params interface{}, response Response,
 
 	resource, err := zabbix.client.Do(payload)
 	if err != nil {
-		return karma.Format(
-			err,
-			"http request to zabbix api failed",
-		)
+		return karma.Format(err, "http request to zabbix api failed")
 	}
 
 	body, err := io.ReadAll(resource.Body)
 	if err != nil {
-		return karma.Format(
-			err,
-			"can't read zabbix api response body",
-		)
+		return karma.Format(err, "can't read zabbix api response body")
 	}
 
 	debugf("<~ %s", resource.Status)
@@ -593,11 +569,7 @@ func (zabbix *Zabbix) call(method string, params interface{}, response Response,
 
 	err = response.Error()
 	if err != nil {
-		return karma.Format(
-			err,
-			"zabbix returned error while working with api method %s",
-			method,
-		)
+		return karma.Format(err, "zabbix returned error while working with api method %s", method)
 	}
 
 	return nil
@@ -638,10 +610,7 @@ func unshuffle(target interface{}) []interface{} {
 
 	var values []interface{}
 	for _, key := range tears.MapKeys() {
-		values = append(
-			values,
-			tears.MapIndex(key).Interface(),
-		)
+		values = append(values, tears.MapIndex(key).Interface())
 	}
 
 	return values

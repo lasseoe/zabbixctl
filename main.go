@@ -53,6 +53,7 @@ func main() {
 		config.Server.Address,
 		config.Server.Username,
 		config.Server.Password,
+		config.Server.Insecure,
 		config.Session.Path,
 	)
 	if err != nil {
