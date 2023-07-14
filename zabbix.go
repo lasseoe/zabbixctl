@@ -41,7 +41,6 @@ type Request struct {
 type Zabbix struct {
 	basicURL   string
 	apiURL     string
-	insecure   string
 	session    string
 	client     *http.Client
 	requestID  int64

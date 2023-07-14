@@ -12,7 +12,7 @@ type Config struct {
 		Address  string `toml:"address" required:"true"`
 		Username string `toml:"username" required:"true"`
 		Password string `toml:"password" required:"true"`
-		Insecure string `toml:"insecure" required:"false", default:"false"`
+		Insecure string `toml:"insecure" required:"false" default:"false"`
 	} `toml:"server"`
 	Session struct {
 		Path string `toml:"path"`
