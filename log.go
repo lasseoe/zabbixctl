@@ -10,7 +10,7 @@ import (
 
 func getLogger() *lorg.Log {
 	logger := lorg.NewLog()
-	logger.SetFormat(lorg.NewFormat("${level:[%s]:left:true} %s"))
+	logger.SetFormat(lorg.NewFormat("${level:[%s]:right:short} %s"))
 
 	return logger
 }
