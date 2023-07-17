@@ -17,7 +17,7 @@ var (
 )
 
 func init() {
-	spinner.SetInterval(time.Millisecond * 100)
+	spinner.SetInterval(time.Millisecond * 200)
 }
 
 func main() {

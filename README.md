@@ -2,9 +2,9 @@
 
 [![CI](https://github.com/lasseoe/zabbixctl/actions/workflows/go.yml/badge.svg)](https://github.com/lasseoe/zabbixctl/actions/workflows/go.yml)
 
-**zabbixctl** is tool for working with zabbix server api using command line
-interface, it provides effective way for operating on statuses of triggers,
-hosts latest data and groups of users.
+**zabbixctl** is a tool for working with the Zabbix server API using the command line
+interface, it provides an effective way for operating on trigger status,
+host latest data and groups of users.
 
 ![dashboard](http://i.imgur.com/0WZkMN0.gif)
 
@@ -16,7 +16,7 @@ It would appear that the original project is dead, so I decided to fork it and w
 ## Installation
 
 ```
-go get github.com/kovetskiy/zabbixctl
+go get github.com/lasseoe/zabbixctl
 ```
 
 afterwards executable will be placed as `$GOPATH/bin/zabbixctl`
@@ -29,16 +29,17 @@ syntax:
 
 ```toml
 [server]
-  address  = "zabbix.local"
+  address  = "https://zabbix.local"
   username = "admin"
   password = "password"
+  insecure = "false"
 
 [session]
   path = "~/.cache/zabbixctl.session"
 ```
 
 **zabbixctl** will authorize in 'zabbix.local' server using given user
-credentials and save a zabbix session to a file `~/.cache/zabbixctl.session`
+credentials and save a Zabbix session to a file `~/.cache/zabbixctl.session`
 and at second run will use saved session instead of new authorization, by the
 way zabbix sessions have a ttl that by default equals to 15 minutes, so if
 saved zabbix session is outdated, **zabbixctl** will repeat authorization and

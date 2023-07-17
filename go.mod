@@ -1,4 +1,4 @@
-module github.com/kovetskiy/zabbixctl
+module github.com/lasseoe/zabbixctl
 
 go 1.20
 

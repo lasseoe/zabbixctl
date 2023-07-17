@@ -4,8 +4,8 @@ zabbixctl(1) -- tool for working with zabbix using command line interface
 ## DESCRIPTIOPN
 
 *zabbixctl* is a tool for working with zabbix server api using command line
-interface, it provides effective way for operating on statuses of triggers,
-hosts latest data and groups of users.
+interface, it provides effective way for operating on trigger status,
+host latest data and groups of users.
 
 ## CONFIGURATION
 
@@ -16,6 +16,7 @@ written using following syntax:
       address  = "https://zabbix.local"
       username = "admin"
       password = "password"
+      insecure = "false"
 
     [session]
       path = "~/.cache/zabbixctl.session"
@@ -214,4 +215,4 @@ Stanislav Seletskiy <s.seletskiy@gmail.com>
 
 Andrey Kitsul <a.kitsul@zarplata.ru>
 
-[GitHub](https://github.com/kovetskiy/zabbixctl)
+[GitHub](https://github.com/lasseoe/zabbixctl)
