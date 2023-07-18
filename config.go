@@ -38,7 +38,7 @@ func NewConfig(path string) (*Config, error) {
 	}
 	// must have either a password in the configfile or env variable
 	if !ok && config.Server.Password == "" {
-		return nil, fmt.Errorf("zabbix user password not found in %s or env variable ZABBIXCTL_USERPASS.", path)
+		return nil, fmt.Errorf("zabbix user password not found in %s or env variable ZABBIXCTL_USERPASS", path)
 	}
 
 	return config, nil
