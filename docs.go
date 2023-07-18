@@ -10,13 +10,14 @@ var (
 interface, it provides an effective way for operating on statuses of triggers,
 hosts latest data and groups of users.
 
-  zabbixctl reads its configuration from  ~/.config/zabbixctl.conf and must be
+  zabbixctl reads its configuration from ~/.config/zabbixctl.conf and must be
 written using following syntax:
 
     [server]
       address  = "https://zabbix.local"
       username = "admin"
       password = "password"
+      insecure = "false"
 
     [session]
       path = "~/.cache/zabbixctl.session"
