@@ -23,9 +23,8 @@ afterwards executable will be placed as `$GOPATH/bin/zabbixctl`
 
 ## Configuration
 
-**zabbixctl** must be configurated before using, configuration file should be
-placed in `~/.config/zabbixctl.conf` and must be written using following
-syntax:
+**zabbixctl** reads its configuration from ~/.config/zabbixctl.conf and must be
+written using the following syntax:
 
 ```toml
 [server]
