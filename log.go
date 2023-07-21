@@ -30,6 +30,7 @@ func fatal(format string, values ...interface{}) {
 	os.Exit(1)
 }
 
+//lint:ignore U1000 Ignore unused function temporarily for debugging
 func fatalf(format string, values ...interface{}) {
 	fatal(format, values...)
 }
