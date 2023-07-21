@@ -5,30 +5,36 @@ import (
 	"strconv"
 )
 
+// https://www.zabbix.com/documentation/current/en/manual/api/reference/item/object
+
 type ItemType int
 
 const (
-	ItemTypeAgent ItemType = iota
-	ItemTypeSNMPv1
-	ItemTypeTrapper
-	ItemTypeSimpleCheck
-	ItemTypeSNMPv2
-	ItemTypeInternal
-	ItemTypeSNMPv3
-	ItemTypeAgentActive
-	ItemTypeAggregate
-	ItemTypeWeb
-	ItemTypeExternalCheck
-	ItemTypeDatabaseMonitor
-	ItemTypeIPMI
-	ItemTypeSSH
-	ItemTypeTELNET
-	ItemTypeCalculated
-	ItemTypeJMX
-	ItemTypeSNMPTrap
+	ItemTypeAgent ItemType = iota	// 0
+	_
+	ItemTypeTrapper			// 2
+	ItemTypeSimpleCheck		// 3
+	_
+	ItemTypeInternal		// 5
+	_
+	ItemTypeAgentActive		// 7
+	_
+	ItemTypeWeb			// 9
+	ItemTypeExternalCheck		// 10
+	ItemTypeDatabaseMonitor		// 11
+	ItemTypeIPMI			// 12
+	ItemTypeSSH			// 13
+	ItemTypeTELNET			// 14
+	ItemTypeCalculated		// 15
+	ItemTypeJMX			// 16
+	ItemTypeSNMPTrap		// 17
+	ItemTypeDependent		// 18
+	ItemTypeHTTPAgent		// 19
+	ItemTypeSNMPAgent		// 20
+	Script				// 21
 )
 
-func (type_ *ItemType) UnmarshalJSON(data []byte) error {
+func (it *ItemType) UnmarshalJSON(data []byte) error {
 	var stringValue string
 
 	err := json.Unmarshal(data, &stringValue)
@@ -41,29 +47,23 @@ func (type_ *ItemType) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
-	*type_ = ItemType(intValue)
+	*it = ItemType(intValue)
 
 	return nil
 }
 
-func (type_ ItemType) String() string {
-	switch type_ {
+func (it ItemType) String() string {
+	switch it {
 	case ItemTypeAgent:
 		return "agent"
 	case ItemTypeTrapper:
 		return "trapper"
 	case ItemTypeSimpleCheck:
 		return "check"
-	case ItemTypeSNMPv2:
-		return "snmp2"
 	case ItemTypeInternal:
 		return "internal"
-	case ItemTypeSNMPv3:
-		return "snmp3"
 	case ItemTypeAgentActive:
 		return "active"
-	case ItemTypeAggregate:
-		return "aggregate"
 	case ItemTypeWeb:
 		return "web"
 	case ItemTypeExternalCheck:
@@ -81,7 +81,13 @@ func (type_ ItemType) String() string {
 	case ItemTypeJMX:
 		return "jmx"
 	case ItemTypeSNMPTrap:
-		return "snmp"
+		return "snmptrap"
+	case ItemTypeDependent:
+		return "dependent"
+	case ItemTypeHTTPAgent:
+		return "httpagent"
+	case ItemTypeSNMPAgent:
+		return "snmpagent"
 	default:
 		return "unknown"
 	}
