@@ -1,9 +1,10 @@
+BUILD_ROOT	:= $(shell pwd)
 BUILD_DATE	:= $(shell git log -1 --format="%cd" --date=short | sed s/-//g)
-BUILD_NUM	:= $(shell  git rev-list --count HEAD)
+BUILD_NUM	:= $(shell git rev-list --count HEAD)
 BUILD_HASH	:= $(shell git rev-parse --short HEAD)
 
 LDFLAGS		:= "-X main.version=${BUILD_DATE}.${BUILD_NUM}_${BUILD_HASH}-1"
-GCFLAGS		:= "-trimpath ${GOPATH}/src"
+GCFLAGS		:= "-trimpath ${BUILD_ROOT}"
 
 build:
 	CGO_ENABLED=0 go build -x -ldflags=${LDFLAGS} -gcflags ${GCFLAGS} .

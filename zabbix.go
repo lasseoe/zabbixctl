@@ -152,8 +152,6 @@ func (zabbix *Zabbix) saveSession(path string) error {
 func (zabbix *Zabbix) GetAPIVersion() error {
 	var response ResponseAPIVersion
 
-	debugln("* apiinfo.version")
-
 	err := zabbix.call(
 		"apiinfo.version",
 		Params{},
