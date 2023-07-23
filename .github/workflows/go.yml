@@ -1,5 +1,17 @@
 name: CI
-on: [push,pull_request,workflow_dispatch]
+on:
+  push:
+    paths-ignore:
+      - **/README.md
+      - .gitignore
+      - .editorconfig
+  pull_request:
+    paths-ignore:
+      - **/README.md
+      - .gitignore
+      - .editorconfig
+  workflow_dispatch:
+
 jobs:
   build:
     name: Build
