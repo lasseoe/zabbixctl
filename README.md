@@ -16,12 +16,12 @@ It would appear that the original project is dead, so I decided to clone it and 
 Suggestions are most welcome, please [create an issue](https://github.com/lasseoe/zabbixctl/issues) and describe what you'd like to see added or changed.
 
 ### 2023-07-23
-:ballot_box_with_check: Support for Zabbix v5.0 and above (support for <5.0 has been dropped).
-:ballot_box_with_check: Item type names are now correctly reported.
-:ballot_box_with_check: Support natural language date & times ([examples](https://zabbixctl.com/datetime.html)).
-:ballot_box_with_check: Override password config setting with env ZABBIXCTL_USERPASS.
-:ballot_box_with_check: Allow insecure HTTPS using "insecure" config setting.
-:x: Documentation is a work in progress.
+- [x] Support for Zabbix v5.0 and above (support for <5.0 has been dropped).
+- [x] Item type names are now correctly reported.
+- [x] Support natural language date & times ([examples](https://zabbixctl.com/datetime.html)).
+- [x] Override password config setting with env ZABBIXCTL_USERPASS.
+- [x] Allow insecure HTTPS using "insecure" config setting.
+- [ ] Documentation is a work in progress.
 
 ## Installation
 
@@ -33,7 +33,7 @@ If you prefer to install from source and have Go installed, it's as simple as
 go get github.com/lasseoe/zabbixctl
 ```
 
-afterwards the executable will be available as `$GOPATH/bin/zabbixctl`
+afterwards the executable will be available at `$GOPATH/bin/zabbixctl`
 
 ## Configuration
 
@@ -62,7 +62,7 @@ found in environment variable ZABBIXCTL_USERPASS, if present.
 
 ## Usage
 
-#####  -T --triggers
+####  -T --triggers
 Search on zabbix triggers statuses. Triggers could be filtered using
 /<pattern> argument, for example, search and acknowledge all triggers in a
 problem state and match the word 'cache':
@@ -108,7 +108,7 @@ Acknowledge all retrieved triggers.
 ##### -f --noconfirm
 Do not prompt acknowledge confirmation dialog.
 
-#####  -L --latest-data
+####  -L --latest-data
 Search and show latest data for specified host(s). Hosts can be searched using
 wildcard character '*'.  Latest data can be filtered using /<pattern> argument,
 for example retrieve latest data for database nodes and search information
@@ -140,7 +140,7 @@ Do not prompt confirmation dialog.
 Returns single link which points to the stacked or normal graph for matched
 items.
 
-##### -M --maintenances
+#### -M --maintenances
 Search and operate on configuration of maintenance. Maintenance could be
 filtered using /<pattern> argument, for example, search maintenance match the
 word 'update-kernel':
@@ -155,7 +155,7 @@ Add new specified <maintenance> with timeperiod type once.
 ##### -r --remove
 Remove specified <maintenance>.
 
-##### -H --hosts
+#### -H --hosts
 Search and operate with host.
 
 ```
