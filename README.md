@@ -1,25 +1,39 @@
-[![CI](https://github.com/lasseoe/zabbixctl/actions/workflows/go.yml/badge.svg)](https://github.com/lasseoe/zabbixctl/actions/workflows/go.yml)
+[![CI](https://github.com/lasseoe/zabbixctl/actions/workflows/go.yml/badge.svg)](https://github.com/lasseoe/zabbixctl/actions/workflows/go.yml) ![license](https://img.shields.io/github/license/lasseoe/zabbixctl)
+
 
 [![zabbixctl](https://zabbixctl.com/img/zabbixctl-gh-logo.png)](https://zabbixctl.com)
 
 **zabbixctl** is a tool for working with the Zabbix server API using the command line
 interface, it provides an effective way for operating on trigger status,
-host latest data and groups of users.
+latest host data and groups of users.
 
 ![dashboard](http://i.imgur.com/0WZkMN0.gif)
 
-## State of the project
+## :information_source: State of the project
 
 ### 2023-07-13
-It would appear that the original project is dead, so I decided to fork it and will bring it up to date, and add new features.
+It would appear that the original project is dead, so I decided to clone it and will bring it up to date & add a lot of new features.
+Suggestions are most welcome, please [create an issue](https://github.com/lasseoe/zabbixctl/issues) and describe what you'd like to see added or changed.
+
+### 2023-07-23
+:ballot_box_with_check: Support for Zabbix v5.0 and above (support for <5.0 has been dropped).
+:ballot_box_with_check: Item type names are now correctly reported.
+:ballot_box_with_check: Support natural language date & times ([examples](https://zabbixctl.com/datetime.html)).
+:ballot_box_with_check: Override password config setting with env ZABBIXCTL_USERPASS.
+:ballot_box_with_check: Allow insecure HTTPS using "insecure" config setting.
+:x: Documentation is a work in progress.
 
 ## Installation
+
+Binaries are published on the [release page](https://github.com/lasseoe/zabbixctl/releases).
+
+If you prefer to install from source and have Go installed, it's as simple as
 
 ```
 go get github.com/lasseoe/zabbixctl
 ```
 
-afterwards executable will be placed as `$GOPATH/bin/zabbixctl`
+afterwards the executable will be available as `$GOPATH/bin/zabbixctl`
 
 ## Configuration
 
@@ -37,12 +51,14 @@ written using the following syntax:
   path = "~/.cache/zabbixctl.session"
 ```
 
-**zabbixctl** will authorize in 'zabbix.local' server using given user
+**zabbixctl** will authorize against 'zabbix.local' using given user
 credentials and save a Zabbix session to a file `~/.cache/zabbixctl.session`
-and at second run will use saved session instead of new authorization, by the
-way zabbix sessions have a ttl that by default equals to 15 minutes, so if
-saved zabbix session is outdated, **zabbixctl** will repeat authorization and
-rewrite the session file.
+and at second run will use saved session instead of re-authorizing.
+Zabbix sessions have a default TTL of 15 minutes, so if the saved Zabbix
+session is outdated, zabbixctl will repeat authorization and rewrite the
+session file.
+The *password* setting is now optional and zabbixctl will use the password
+found in environment variable ZABBIXCTL_USERPASS, if present.
 
 ## Usage
 
