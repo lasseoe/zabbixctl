@@ -171,6 +171,7 @@ func TestIssue18(t *testing.T) {
 	zabbix := &Zabbix{}
 	zabbix.client = testserver.Client()
 	zabbix.apiURL = testserver.URL
+	zabbix.apiVersion = "5.0.0"
 
 	items, err := zabbix.GetItems(Params{"hostids": []string{"10084"}})
 	test.NoError(err)

@@ -166,6 +166,26 @@ func (zabbix *Zabbix) GetAPIVersion() error {
 	return nil
 }
 
+// zbxVersionConstraint verifies a given version constraint against
+// the Zabbix API version.
+// It returns true when it's a match and false if not.
+func (zabbix *Zabbix) zbxVersionConstraint(v string) (bool, error) {
+	zabbixVersion, err := goversion.NewVersion(zabbix.apiVersion)
+	if err != nil {
+		return false, karma.Format(err, "error parsing apiVersion '%s'", zabbix.apiVersion)
+	}
+	constraints, err := goversion.NewConstraint(v)
+	if err != nil {
+		return false, karma.Format(err, "error setting version contraint '%s'", v)
+	}
+
+	if !constraints.Check(zabbixVersion) {
+		return false, nil
+	}
+
+	return true, nil
+}
+
 func (zabbix *Zabbix) Login(username, password string) error {
 	var response ResponseLogin
 
@@ -176,16 +196,12 @@ func (zabbix *Zabbix) Login(username, password string) error {
 
 	// temporary fix: v5.4 changed user.login argument 'user' to 'username'
 	// we'll implement a better API versioning methodology at a later stage.
-	zabbixVersion, err := goversion.NewVersion(zabbix.apiVersion)
+	zabbixVersion, err := zabbix.zbxVersionConstraint(">= 5.4")
 	if err != nil {
-		return karma.Format(err, "error parsing apiVersion")
-	}
-	constraints, err := goversion.NewConstraint(">= 5.4")
-	if err != nil {
-		return karma.Format(err, "error setting version contraint")
+		return err
 	}
 
-	if constraints.Check(zabbixVersion) {
+	if zabbixVersion {
 		debugf("* Login: zabbix version %s >= 5.4", zabbix.apiVersion)
 		params["username"] = username
 	} else {
@@ -494,6 +510,8 @@ func (zabbix *Zabbix) GetHistory(extend Params) ([]History, error) {
 }
 
 func (zabbix *Zabbix) call(method string, params interface{}, response Response, authFlag bool) error {
+	var useBearerToken = false
+
 	debugf("~> %s", method)
 	debugParams(params)
 
@@ -504,7 +522,17 @@ func (zabbix *Zabbix) call(method string, params interface{}, response Response,
 		ID:     atomic.AddInt64(&zabbix.requestID, 1),
 	}
 
+	// as of v6.4 we should use a Bearer token header for authorization
 	if authFlag {
+		var err error
+		useBearerToken, err = zabbix.zbxVersionConstraint(">= 6.4")
+		if err != nil {
+			return err
+		}
+	}
+
+	// pre v6.4 we use auth parameter
+	if authFlag && !useBearerToken {
 		request.Auth = zabbix.session
 	}
 
@@ -521,6 +549,9 @@ func (zabbix *Zabbix) call(method string, params interface{}, response Response,
 	payload.ContentLength = int64(len(buffer))
 	payload.Header.Add("Content-Type", "application/json-rpc")
 	payload.Header.Add("User-Agent", "zabbixctl")
+	if authFlag && useBearerToken {
+		payload.Header.Add("Authorization", "Bearer "+zabbix.session)
+	}
 
 	resource, err := zabbix.client.Do(payload)
 	if err != nil {

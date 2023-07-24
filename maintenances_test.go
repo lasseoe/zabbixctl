@@ -89,6 +89,7 @@ func TestMaintenanceGet(t *testing.T) {
 	zabbix := &Zabbix{}
 	zabbix.client = testserver.Client()
 	zabbix.apiURL = testserver.URL
+	zabbix.apiVersion = "5.0.0"
 
 	maintenances, err := zabbix.GetMaintenances(Params{
 		"search": Params{
@@ -117,6 +118,7 @@ func TestMaintenanceRemove(t *testing.T) {
 	zabbix := &Zabbix{}
 	zabbix.client = testserver.Client()
 	zabbix.apiURL = testserver.URL
+	zabbix.apiVersion = "5.0.0"
 
 	payload := []string{"3", "1"}
 
@@ -143,6 +145,7 @@ func TestMaintenanceCreate(t *testing.T) {
 	zabbix := &Zabbix{}
 	zabbix.client = testserver.Client()
 	zabbix.apiURL = testserver.URL
+	zabbix.apiVersion = "5.0.0"
 
 	var timeperiod Timeperiod
 

@@ -126,6 +126,7 @@ func TestHostsGet(t *testing.T) {
 	zabbix := &Zabbix{}
 	zabbix.client = testserver.Client()
 	zabbix.apiURL = testserver.URL
+	zabbix.apiVersion = "5.0.0"
 
 	hosts, err := zabbix.GetHosts(Params{})
 
@@ -151,6 +152,7 @@ func TestHostsRemove(t *testing.T) {
 	zabbix := &Zabbix{}
 	zabbix.client = testserver.Client()
 	zabbix.apiURL = testserver.URL
+	zabbix.apiVersion = "5.0.0"
 
 	var hostids Hosts
 	payload := []string{"13", "32"}
