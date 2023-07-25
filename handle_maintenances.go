@@ -106,7 +106,6 @@ func handleAddMaintenance(
 
 		hostids   = []string{}
 		uniqHosts = make(map[string]bool)
-		err       error
 		hosts     []Host
 		params    Params
 	)
@@ -145,7 +144,7 @@ func handleAddMaintenance(
 		}
 	}
 
-	err = printHostsTable(hosts)
+	err := printHostsTable(hosts)
 	if err != nil {
 		debugf("Error: %+v", err)
 	}
@@ -211,7 +210,6 @@ func handleUpdateMaintenance(
 
 		hostids   = []string{}
 		uniqHosts = make(map[string]bool)
-		err       error
 		hosts     []Host
 		params    Params
 	)
@@ -259,7 +257,7 @@ func handleUpdateMaintenance(
 		}
 	}
 
-	err = printHostsTable(hosts)
+	err := printHostsTable(hosts)
 	if err != nil {
 		debugf("Error: %+v", err)
 	}

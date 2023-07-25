@@ -178,7 +178,8 @@ func getTriggerItemsHistory(
 		":: Requesting history for items of triggers",
 		func() error {
 			for _, item := range items {
-				lastValues, err := zabbix.GetHistory(Params{
+				var lastValues []History
+				lastValues, err = zabbix.GetHistory(Params{
 					"history": item.ValueType,
 					"itemids": item.ID,
 					"limit":   1,

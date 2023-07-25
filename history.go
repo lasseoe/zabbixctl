@@ -12,6 +12,8 @@ type History struct {
 	Clock  string      `json:"clock"`
 }
 
+// go vet complains: struct field ItemID repeats json tag "itemid" also at item.go:20
+// https://github.com/golang/go/issues/40102
 type ItemHistory struct {
 	Item
 	History

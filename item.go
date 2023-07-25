@@ -42,7 +42,8 @@ func (item *Item) getLastClock() string {
 	case float64:
 		return fmt.Sprint(int64(typed))
 	default:
-		panic("asdasdasd")
+		fatalf("unexpected type '%v' for lastclock in item ID %s (%s)\nplease file a bug report.", typed, item.ID, item.Name)
+		return "error"
 	}
 }
 

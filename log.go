@@ -9,8 +9,8 @@ import (
 	"github.com/kovetskiy/spinner-go"
 )
 
-func getLogger() *lorg.Log {
-	logger := lorg.NewLog()
+func getLogger() (logger *lorg.Log) {
+	logger = lorg.NewLog()
 	logger.SetFormat(lorg.NewFormat("${level:[%s]:right:short} %s"))
 
 	return logger

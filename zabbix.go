@@ -48,11 +48,9 @@ type Zabbix struct {
 }
 
 func NewZabbix(address, username, password, insecure, sessionFile string) (*Zabbix, error) {
-	var err error
-
 	tlsinsecure, err := strconv.ParseBool(strings.ToLower(insecure))
 	if err != nil {
-		karma.Format(err, "can't parse insecure config flag, expected boolean, got '%s'", insecure)
+		return nil, karma.Format(err, "can't parse insecure config flag, expected boolean,got '%s'", insecure)
 	}
 
 	tr := &http.Transport{
@@ -557,6 +555,7 @@ func (zabbix *Zabbix) call(method string, params interface{}, response Response,
 	if err != nil {
 		return karma.Format(err, "http request to zabbix api failed")
 	}
+	defer resource.Body.Close()
 
 	body, err := io.ReadAll(resource.Body)
 	if err != nil {

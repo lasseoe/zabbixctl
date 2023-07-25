@@ -79,26 +79,26 @@ func handleLatestData(
 			errs := make(chan error)
 
 			go func() {
-				var err error
+				var giErr error
 
-				items, err = zabbix.GetItems(Params{
+				items, giErr = zabbix.GetItems(Params{
 					"hostids":  identifiers,
 					"webitems": "1",
 				})
 
-				errs <- err
+				errs <- giErr
 			}()
 
 			go func() {
-				var err error
+				var ghErr error
 
-				webchecks, err = zabbix.GetHTTPTests(Params{
+				webchecks, ghErr = zabbix.GetHTTPTests(Params{
 					"hostids":     identifiers,
 					"expandName":  "1",
 					"selectSteps": "extend",
 				})
 
-				errs <- err
+				errs <- ghErr
 			}()
 
 			for _, err := range []error{<-errs, <-errs} {
