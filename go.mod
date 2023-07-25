@@ -15,13 +15,14 @@ require (
 )
 
 require (
-	github.com/BurntSushi/toml v1.2.0 // indirect
+	github.com/BurntSushi/toml v1.3.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/ijt/goparsify v0.0.0-20221203142333-3a5276334b8d // indirect
-	github.com/mattn/go-runewidth v0.0.9 // indirect
+	github.com/mattn/go-runewidth v0.0.15 // indirect
 	github.com/nsf/termbox-go v1.1.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/zazab/zhash v0.0.0-20210630080733-6e809466f8d3 // indirect
+	github.com/rivo/uniseg v0.4.4 // indirect
+	github.com/zazab/zhash v0.0.0-20221031090444-2b0d50417446 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
